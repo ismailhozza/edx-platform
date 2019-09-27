@@ -1644,7 +1644,8 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
         cls.record_b = BlockRecord(locator=cls.locator_b, weight=1, raw_possible=10, graded=True)
         cls.block_records = BlockRecordList([cls.record_a, cls.record_b], cls.course_key)
         cls.usage_key = cls.subsections[cls.chapter_1.location][0].location
-        cls.user_id = 12345
+        cls.user = UserFactory.create()
+        cls.user_id = cls.user.id
         cls.params = {
             "user_id": cls.user_id,
             "usage_key": cls.usage_key,
@@ -1676,6 +1677,41 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
         'login_course_admin',
         'login_course_staff',
     )
+    def test_no_grade(self, login_method):
+        getattr(self, login_method)()
+        user_no_grade = UserFactory.create()
+
+        with self.assertRaises(PersistentSubsectionGrade.DoesNotExist):
+            PersistentSubsectionGrade.objects.get(
+                user_id=user_no_grade.id,
+                course_id=self.usage_key.course_key,
+                usage_key=self.usage_key
+            )
+
+        resp = self.client.get(
+            self.get_url(subsection_id=self.usage_key, user_id=user_no_grade.id)
+        )
+
+        expected_data = {
+            'original_grade': OrderedDict([
+                ('earned_all', 0.0),
+                ('possible_all', 0.0),
+                ('earned_graded', 0.0),
+                ('possible_graded', 0.0)
+            ]),
+            'user_id': user_no_grade.id,
+            'override': None,
+            'course_id': text_type(self.usage_key.course_key),
+            'subsection_id': text_type(self.usage_key),
+            'history': []
+        }
+        self.assertEqual(expected_data, resp.data)
+
+    @ddt.data(
+        'login_staff',
+        'login_course_admin',
+        'login_course_staff',
+    )
     def test_no_override(self, login_method):
         getattr(self, login_method)()
 
@@ -1690,7 +1726,7 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
                 ('earned_graded', 6.0),
                 ('possible_graded', 8.0)
             ]),
-            'user_id': 12345,
+            'user_id': self.user_id,
             'override': None,
             'course_id': text_type(self.course_key),
             'subsection_id': text_type(self.usage_key),
@@ -1727,7 +1763,7 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
                 ('earned_graded', 6.0),
                 ('possible_graded', 8.0)
             ]),
-            'user_id': 12345,
+            'user_id': self.user_id,
             'override': OrderedDict([
                 ('earned_all_override', 0.0),
                 ('possible_all_override', 12.0),
@@ -1784,7 +1820,7 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
                 ('earned_graded', 6.0),
                 ('possible_graded', 8.0)
             ]),
-            'user_id': 12345,
+            'user_id': self.user_id,
             'override': OrderedDict([
                 ('earned_all_override', 0.0),
                 ('possible_all_override', 12.0),
@@ -1874,15 +1910,20 @@ class SubsectionGradeViewTest(GradebookViewTestBase):
             feature=GradeOverrideFeatureEnum.gradebook,
         )
 
+        other_user = UserFactory.create()
         resp = self.client.get(
-            self.get_url(subsection_id=self.usage_key, user_id=6789)
+            self.get_url(subsection_id=self.usage_key, user_id=other_user.id)
         )
-
         expected_data = {
-            'original_grade': None,
-            'user_id': 6789,
+            'original_grade': OrderedDict([
+                ('earned_all', 0.0),
+                ('possible_all', 0.0),
+                ('earned_graded', 0.0),
+                ('possible_graded', 0.0)
+            ]),
+            'user_id': other_user.id,
             'override': None,
-            'course_id': None,
+            'course_id': text_type(self.usage_key.course_key),
             'subsection_id': text_type(self.usage_key),
             'history': []
         }

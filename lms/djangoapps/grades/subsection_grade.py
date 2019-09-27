@@ -159,6 +159,12 @@ class NonZeroSubsectionGrade(six.with_metaclass(ABCMeta, SubsectionGradeBase)):
     def percent_graded(self):
         return compute_percent(self.graded_total.earned, self.graded_total.possible)
 
+    def get_model(self):
+        """
+        Get the PersistentSubsectionGrade that this object corresponds to
+        """
+        raise NotImplementedError
+
     @staticmethod
     def _compute_block_score(
             block_key,
