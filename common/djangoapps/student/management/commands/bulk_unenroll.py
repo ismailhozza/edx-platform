@@ -35,6 +35,7 @@ class Command(BaseCommand):
         csv_path = options['csv_path']
         csvfile = open(csv_path) if csv_path else BulkUnenrollConfiguration.current().csv_file
         reader = unicodecsv.DictReader(csvfile)
+        users_unenrolled = []
         for row in reader:
             username = row['username']
             email = row['email']
@@ -61,6 +62,10 @@ class Command(BaseCommand):
                 else:
                     try:
                         CourseEnrollment.unenroll(user, course_id, skip_refund=True)
+                        users_unenrolled.append("{username}:{course_id}".format(**row))
                     except Exception as err:
                         msg = 'Error un-enrolling User {} from course {}: '.format(username, course_key, err)
                         logger.error(msg, exc_info=True)
+
+        logger.info("Following users has been unenrolled successfully from the following courses: {users_unenrolled}"
+                    .format(users_unenrolled=users_unenrolled))

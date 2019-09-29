@@ -118,3 +118,28 @@ class BulkUnenrollTests(SharedModuleStoreTestCase):
         call_command("bulk_unenroll")
         for enrollment in CourseEnrollment.objects.all():
             self.assertEqual(enrollment.is_active, False)
+
+    def test_users_un_enroll_successfully_logged(self):
+        """Verify users unenrolled are logged """
+        lines = "user_id,username,email,course_id\n"
+        users_unenrolled = []
+        for enrollment in self.enrollments:
+            users_unenrolled.append("{username}:{course_id}".format(
+                username=enrollment.user.username, course_id=str(enrollment.course.id)))
+
+            lines += str(enrollment.user.id) + "," + enrollment.user.username + "," + \
+                enrollment.user.email + "," + str(enrollment.course.id) + "\n"
+
+        csv_file = SimpleUploadedFile(name='test.csv', content=lines, content_type='text/csv')
+        BulkUnenrollConfiguration.objects.create(enabled=True, csv_file=csv_file)
+
+        with LogCapture(LOGGER_NAME) as log:
+            call_command("bulk_unenroll")
+            log.check(
+                (
+                    LOGGER_NAME,
+                    'INFO',
+                    'Following users has been unenrolled successfully from the following courses:'
+                    ' {users_unenrolled}'.format(users_unenrolled=users_unenrolled))
+                )
+
