@@ -285,6 +285,7 @@ class CourseDetailsViewTest(CourseTestCase, MilestonesTestCaseMixin):
 
         with mock.patch.dict('django.conf.settings.FEATURES', {
             'ENABLE_PUBLISHER': True,
+            'ENABLE_MKTG_SITE': True,
             'ENTRANCE_EXAMS': False,
             'ENABLE_PREREQUISITE_COURSES': False
         }):
@@ -298,8 +299,6 @@ class CourseDetailsViewTest(CourseTestCase, MilestonesTestCaseMixin):
             self.assertContains(response, "Enrollment Start Date")
             self.assertContains(response, "Enrollment End Date")
 
-            self.assertContains(response, "Introducing Your Course")
-            self.assertContains(response, "Course Card Image")
             self.assertContains(response, "Course Short Description")
             self.assertNotContains(response, "Course About Sidebar HTML")
             self.assertNotContains(response, "Course Title")

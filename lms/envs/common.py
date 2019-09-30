@@ -98,7 +98,7 @@ FEATURES = {
     'ENABLE_TEXTBOOK': True,
 
     # .. toggle_name: ENABLE_STUDENT_NOTES
-    # .. toggle_type: waffle_flag
+    # .. toggle_implementation: DjangoSetting
     # .. toggle_default: True
     # .. toggle_description: Enables the Student Notes API and UI.
     # .. toggle_category: ????
@@ -128,7 +128,7 @@ FEATURES = {
     'ENABLE_MASQUERADE': True,  # allow course staff to change to student view of courseware
 
     # .. toggle_name: ENABLE_SYSADMIN_DASHBOARD
-    # .. toggle_type: waffle_flag
+    # .. toggle_implementation: DjangoSetting
     # .. toggle_default: False
     # .. toggle_description: enables dashboard at /syadmin/ for django staff, for seeing overview of system status, for deleting and loading courses, for seeing log of git imports of courseware.
     # .. toggle_category: admin
@@ -193,7 +193,7 @@ FEATURES = {
     'ENABLE_VERIFIED_CERTIFICATES': False,
 
     # .. toggle_name: DISABLE_HONOR_CERTIFICATES
-    # .. toggle_type: waffle_flag
+    # .. toggle_implementation: DjangoSetting
     # .. toggle_default: False
     # .. toggle_description: Set to True to disable honor certificates. Typically used when your installation only allows verified certificates, like courses.edx.org.
     # .. toggle_category: certificates
@@ -364,7 +364,7 @@ FEATURES = {
     # This will eventually default to True and may be
     # removed since all installs should have the separate
     # extended history table.
-    'ENABLE_CSMH_EXTENDED': False,
+    'ENABLE_CSMH_EXTENDED': True,
 
     # Read from both the CSMH and CSMHE history tables.
     # This is the default, but can be disabled if all history
@@ -669,7 +669,7 @@ CONTEXT_PROCESSORS = [
     'shoppingcart.context_processor.user_has_cart_context_processor',
 
     # Timezone processor (sends language and time_zone preference)
-    'courseware.context_processor.user_timezone_locale_prefs',
+    'lms.djangoapps.courseware.context_processor.user_timezone_locale_prefs',
 
     # Online contextual help
     'help_tokens.context_processor',
@@ -1498,8 +1498,8 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     # to redirected unenrolled students to the course info page
-    'courseware.middleware.CacheCourseIdMiddleware',
-    'courseware.middleware.RedirectMiddleware',
+    'lms.djangoapps.courseware.middleware.CacheCourseIdMiddleware',
+    'lms.djangoapps.courseware.middleware.RedirectMiddleware',
 
     'course_wiki.middleware.WikiAccessMiddleware',
 
@@ -2272,7 +2272,8 @@ INSTALLED_APPS = [
     'openedx.core.djangoapps.video_pipeline',
 
     # Our courseware
-    'courseware',
+    'lms.djangoapps.courseware',
+    'coursewarehistoryextended',
     'student.apps.StudentConfig',
 
     'static_template_view',
@@ -2500,7 +2501,10 @@ INSTALLED_APPS = [
 
     # edx-drf-extensions
     'csrf.apps.CsrfAppConfig',  # Enables frontend apps to retrieve CSRF tokens.
-    'xss_utils'
+    'xss_utils',
+
+    # so sample_task is available to celery workers
+    'openedx.core.djangoapps.heartbeat',
 ]
 
 ######################### CSRF #########################################
