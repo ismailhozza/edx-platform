@@ -53,12 +53,11 @@ class BulkUnenrollTests(SharedModuleStoreTestCase):
 
             with LogCapture(LOGGER_NAME) as log:
                 call_command("bulk_unenroll", "--csv_path={}".format(csv.name))
-                log.check(
-                    (
-                        LOGGER_NAME,
-                        'WARNING',
-                        'User with username {} or email {} does not exist'.format('test', 'test@example.com')
-                    )
+                expected_message = 'User with username {} or email {} does not exist'.\
+                    format('test', 'test@example.com')
+
+                log.check_present(
+                    (LOGGER_NAME, 'WARNING', expected_message)
                 )
 
     def test_invalid_course_key(self):
@@ -68,13 +67,11 @@ class BulkUnenrollTests(SharedModuleStoreTestCase):
 
             with LogCapture(LOGGER_NAME) as log:
                 call_command("bulk_unenroll", "--csv_path={}".format(csv.name))
-                log.check(
-                    (
-                        LOGGER_NAME,
-                        'WARNING',
-                        'Invalid course id {}, skipping un-enrollement for {}, {}'.format(
-                            'test_course', 'amy', 'amy@pond.com')
-                    )
+                expected_message = 'Invalid course id {}, skipping un-enrollement for {}, {}'.\
+                    format('test_course', 'amy', 'amy@pond.com')
+
+                log.check_present(
+                    (LOGGER_NAME, 'WARNING', expected_message)
                 )
 
     def test_user_not_enrolled(self):
@@ -84,13 +81,11 @@ class BulkUnenrollTests(SharedModuleStoreTestCase):
 
             with LogCapture(LOGGER_NAME) as log:
                 call_command("bulk_unenroll", "--csv_path={}".format(csv.name))
-                log.check(
-                    (
-                        LOGGER_NAME,
-                        'INFO',
-                        'Enrollment for the user {} in course {} does not exist!'.format(
-                            'amy', 'course-v1:edX+DemoX+Demo_Course')
-                    )
+                expected_message = 'Enrollment for the user {} in course {} does not exist!'.\
+                    format('amy', 'course-v1:edX+DemoX+Demo_Course')
+
+                log.check_present(
+                    (LOGGER_NAME, 'INFO', expected_message)
                 )
 
     def test_bulk_un_enroll(self):
@@ -140,6 +135,6 @@ class BulkUnenrollTests(SharedModuleStoreTestCase):
                     LOGGER_NAME,
                     'INFO',
                     'Following users has been unenrolled successfully from the following courses:'
-                    ' {users_unenrolled}'.format(users_unenrolled=users_unenrolled))
+                    ' {users_unenrolled}'.format(users_unenrolled=users_unenrolled)
                 )
-
+            )
