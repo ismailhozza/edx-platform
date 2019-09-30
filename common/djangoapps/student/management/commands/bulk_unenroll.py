@@ -33,8 +33,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         csv_path = options['csv_path']
-        csvfile = open(csv_path) if csv_path else BulkUnenrollConfiguration.current().csv_file
-        reader = unicodecsv.DictReader(csvfile)
+        try:
+            csv_file = open(csv_path) if csv_path else BulkUnenrollConfiguration.current().csv_file
+        except IOError:
+            logger.error("Unable to open the file. Please make sure file exist!")
+            return
+
+        reader = unicodecsv.DictReader(csv_file)
         users_unenrolled = []
         for row in reader:
             username = row['username']
