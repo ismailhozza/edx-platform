@@ -30,6 +30,7 @@ from oauthlib.oauth1.rfc5849 import parameters, signature
 from openedx.core.djangolib.markup import HTML
 
 from .http import StubHttpRequestHandler, StubHttpService
+import pdb
 
 log = logging.getLogger(__name__)
 
@@ -171,6 +172,7 @@ class StubLtiHandler(StubHttpRequestHandler):
         return self._send_lti2(payload)
 
     def _send_lti2(self, payload):
+        pdb.set_trace()
         """
         Send lti2 json result service request.
         """
