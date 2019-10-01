@@ -201,9 +201,9 @@ class RoleTestCase(UserApiTestCase):
         # ensure that having basic auth headers in the mix does not break anything
         self.assertHttpOK(
             self.request_with_auth("get", self.LIST_URI,
-                                   **self.basic_auth("someuser", "somepass")))
+                                   **self.basic_auth(b"someuser", b"somepass")))
         self.assertHttpForbidden(
-            self.client.get(self.LIST_URI, **self.basic_auth("someuser", "somepass")))
+            self.client.get(self.LIST_URI, **self.basic_auth(b"someuser", b"somepass")))
 
     def test_get_list_nonempty(self):
         result = self.get_json(self.LIST_URI)
@@ -286,9 +286,9 @@ class UserViewSetTest(UserApiTestCase):
         # ensure that having basic auth headers in the mix does not break anything
         self.assertHttpOK(
             self.request_with_auth("get", self.LIST_URI,
-                                   **self.basic_auth('someuser', 'somepass')))
+                                   **self.basic_auth(b'someuser', b'somepass')))
         self.assertHttpForbidden(
-            self.client.get(self.LIST_URI, **self.basic_auth('someuser', 'somepass')))
+            self.client.get(self.LIST_URI, **self.basic_auth(b'someuser', b'somepass')))
 
     def test_get_list_nonempty(self):
         result = self.get_json(self.LIST_URI)
