@@ -75,7 +75,7 @@ class StubLtiServiceTest(unittest.TestCase):
         with patch('terrain.stubs.lti.requests.post') as mocked_post:
             mocked_post.return_value = Mock(content='Test response', status_code=200)
             response = six.moves.urllib.request.urlopen(grade_uri, data=b'')
-            self.assertIn('Test response', response.read())
+            self.assertIn(b'Test response', response.read())
 
     @patch('terrain.stubs.lti.signature.verify_hmac_sha1', return_value=True)
     def test_lti20_outcomes_put(self, verify_hmac):  # pylint: disable=unused-argument
@@ -85,7 +85,7 @@ class StubLtiServiceTest(unittest.TestCase):
         with patch('terrain.stubs.lti.requests.put') as mocked_put:
             mocked_put.return_value = Mock(status_code=200)
             response = six.moves.urllib.request.urlopen(grade_uri, data=b'')
-            self.assertIn('LTI consumer (edX) responded with HTTP 200', response.read())
+            self.assertIn(b'LTI consumer (edX) responded with HTTP 200', response.read())
 
     @patch('terrain.stubs.lti.signature.verify_hmac_sha1', return_value=True)
     def test_lti20_outcomes_put_like_delete(self, verify_hmac):  # pylint: disable=unused-argument
@@ -95,4 +95,4 @@ class StubLtiServiceTest(unittest.TestCase):
         with patch('terrain.stubs.lti.requests.put') as mocked_put:
             mocked_put.return_value = Mock(status_code=200)
             response = six.moves.urllib.request.urlopen(grade_uri, data=b'')
-            self.assertIn('LTI consumer (edX) responded with HTTP 200', response.read())
+            self.assertIn(b'LTI consumer (edX) responded with HTTP 200', response.read())

@@ -78,10 +78,10 @@ class StubLtiHandler(StubHttpRequestHandler):
             if self._check_oauth_signature(params, self.post_dict.get('oauth_signature', "")):
                 status_message = "This is LTI tool. Success."
                 # Set data for grades what need to be stored as server data
-                if 'lis_outcome_service_url' in self.post_dict:
+                if b'lis_outcome_service_url' in self.post_dict:
                     self.server.grade_data = {
-                        'callback_url': self.post_dict.get('lis_outcome_service_url').replace('https', 'http'),
-                        'sourcedId': self.post_dict.get('lis_result_sourcedid')
+                        'callback_url': self.post_dict.get(b'lis_outcome_service_url').replace(b'https', b'http'),
+                        'sourcedId': self.post_dict.get(b'lis_result_sourcedid')
                     }
                 host = os.environ.get('BOK_CHOY_HOSTNAME', self.server.server_address[0])
                 submit_url = '//{}:{}'.format(host, self.server.server_address[1])
@@ -172,17 +172,16 @@ class StubLtiHandler(StubHttpRequestHandler):
         return self._send_lti2(payload)
 
     def _send_lti2(self, payload):
-        pdb.set_trace()
         """
         Send lti2 json result service request.
         """
         ### We compute the LTI V2.0 service endpoint from the callback_url (which is set by the launch call)
         url = self.server.grade_data['callback_url']
-        url_parts = url.split('/')
-        url_parts[-1] = "lti_2_0_result_rest_handler"
-        anon_id = self.server.grade_data['sourcedId'].split(":")[-1]
-        url_parts.extend(["user", anon_id])
-        new_url = '/'.join(url_parts)
+        url_parts = url.split(b'/')
+        url_parts[-1] = b"lti_2_0_result_rest_handler"
+        anon_id = self.server.grade_data['sourcedId'].split(b":")[-1]
+        url_parts.extend([b"user", anon_id])
+        new_url = b'/'.join(url_parts)
 
         content_type = 'application/vnd.ims.lis.v2.result+json'
         headers = {
@@ -268,10 +267,10 @@ class StubLtiHandler(StubHttpRequestHandler):
 
         # Calculate and encode body hash. See http://oauth.googlecode.com/svn/spec/ext/body_hash/1.0/oauth-bodyhash.html
         sha1 = hashlib.sha1()
-        sha1.update(body)
+        sha1.update(body if six.PY2 else body.encode('utf-8'))
         oauth_body_hash = six.text_type(base64.b64encode(sha1.digest()))
         mock_request = mock.Mock(
-            uri=six.text_type(six.moves.urllib.parse.unquote(url)),
+            uri=six.text_type(six.moves.urllib.parse.unquote(url.decode('utf-8'))),
             headers=headers,
             body=u"",
             decoded_body=u"",
