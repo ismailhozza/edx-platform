@@ -3829,7 +3829,7 @@ SOCIAL_AUTH_SAML_SP_PUBLIC_CERT_DICT = {}
 RATE_LIMIT_FOR_VIDEO_METADATA_API = '10/minute'
 
 ########################## MAILCHIMP SETTINGS #################################
-#MAILCHIMP_NEW_USER_LIST_ID = None
+MAILCHIMP_NEW_USER_LIST_ID = ""
 
 ########################## BLOCKSTORE #####################################
 BLOCKSTORE_PUBLIC_URL_ROOT = 'http://localhost:18250'
