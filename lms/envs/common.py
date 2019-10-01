@@ -983,7 +983,7 @@ DOC_STORE_CONFIG = {
     'collection': 'modulestore',
     'ssl': False,
     # https://api.mongodb.com/python/2.9.1/api/pymongo/mongo_client.html#module-pymongo.mongo_client
-    # default is never timeout while the connection is open, 
+    # default is never timeout while the connection is open,
     #this means it needs to explicitly close raising pymongo.errors.NetworkTimeout
     'socketTimeoutMS': 3000,
     'connectTimeoutMS': 2000,  # default is 20000, I believe raises pymongo.errors.ConnectionFailure
