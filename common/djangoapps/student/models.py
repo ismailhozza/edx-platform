@@ -2845,7 +2845,7 @@ class RegistrationCookieConfiguration(ConfigurationModel):
             affiliate_name=self.affiliate_cookie_name
         )
 
-      
+
 class BulkUnenrollConfiguration(ConfigurationModel):
     """
 

@@ -33,44 +33,69 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         csv_path = options['csv_path']
-        try:
-            csv_file = open(csv_path) if csv_path else BulkUnenrollConfiguration.current().csv_file
-        except IOError:
-            logger.error("Unable to open the file. Please make sure file exist!")
-            return
+        if csv_path:
+            with open(csv_path) as csv_file:
+                self.un_enroll_users(csv_file)
+        else:
+            csv_file = BulkUnenrollConfiguration.current().csv_file
+            self.un_enroll_users(csv_file)
 
-        reader = unicodecsv.DictReader(csv_file)
+    def un_enroll_users(self, csv_file):
+        reader = list(unicodecsv.DictReader(csv_file))
+        users = self.get_users_info(reader)
+        enrollments, course_ids = self.get_enrollments(reader, users)
         users_unenrolled = []
         for row in reader:
             username = row['username']
             email = row['email']
             course_key = row['course_id']
             try:
-                user = User.objects.get(Q(username=username) | Q(email=email))
+                user = users.get(Q(username=username) | Q(email=email))
             except ObjectDoesNotExist:
                 user = None
                 msg = 'User with username {} or email {} does not exist'.format(username, email)
                 logger.warning(msg)
 
             try:
-                course_id = CourseKey.from_string(course_key)
-            except InvalidKeyError:
+                course_id = course_ids[course_key]
+            except KeyError:
                 course_id = None
                 msg = 'Invalid course id {course_id}, skipping un-enrollement for {username}, {email}'.format(**row)
                 logger.warning(msg)
 
-            if user and course_id:
-                enrollment = CourseEnrollment.get_enrollment(user, course_id)
-                if not enrollment:
-                    msg = 'Enrollment for the user {} in course {} does not exist!'.format(username, course_key)
-                    logger.info(msg)
-                else:
-                    try:
-                        CourseEnrollment.unenroll(user, course_id, skip_refund=True)
-                        users_unenrolled.append("{username}:{course_id}".format(**row))
-                    except Exception as err:
-                        msg = 'Error un-enrolling User {} from course {}: '.format(username, course_key, err)
-                        logger.error(msg, exc_info=True)
+            try:
+                enrollments.get(user_id=user.id, course_id=course_id)
+                try:
+                    CourseEnrollment.unenroll(user, course_id, skip_refund=True)
+                    users_unenrolled.append("{username}:{course_id}".format(**row))
+                except Exception as err:
+                    msg = 'Error un-enrolling User {} from course {}: '.format(username, course_key, err)
+                    logger.error(msg, exc_info=True)
+            except (ObjectDoesNotExist, AttributeError):
+                msg = 'Enrollment for the user {} in course {} does not exist!'.format(username, course_key)
+                logger.info(msg)
 
         logger.info("Following users has been unenrolled successfully from the following courses: {users_unenrolled}"
                     .format(users_unenrolled=users_unenrolled))
+
+    def get_users_info(self, reader):
+
+        user_names = [row['username'] for row in reader]
+        emails = [row['email'] for row in reader]
+        users = User.objects.filter(Q(username__in=user_names) | Q(email__in=emails))
+        return users
+
+    def get_enrollments(self, reader, users):
+
+        course_ids = {}
+        for row in reader:
+            try:
+                course_id = CourseKey.from_string(row['course_id'])
+                course_ids[row['course_id']] = course_id
+            except InvalidKeyError:
+                msg = 'Invalid course id {course_id}'.format(**row)
+                logger.warning(msg)
+
+        enrollments = CourseEnrollment.objects.filter(user__in=users, course_id__in=course_ids.values())
+        return enrollments, course_ids
+
