@@ -612,7 +612,7 @@ def mongo_uses_error_check(store):
     Does mongo use the error check as a separate message?
     """
     if hasattr(store, 'mongo_wire_version'):
-        return store.mongo_wire_version()() <= 1 if isinstance(store.mongo_wire_version(),collections.Callable) \
+        return store.mongo_wire_version()() <= 1 if isinstance(store.mongo_wire_version(), collections.Callable) \
             else store.mongo_wire_version() <= 1
     if hasattr(store, 'modulestores'):
         return any([mongo_uses_error_check(substore) for substore in store.modulestores])
